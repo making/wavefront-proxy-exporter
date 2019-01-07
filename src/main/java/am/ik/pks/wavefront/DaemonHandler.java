@@ -37,23 +37,6 @@ public class DaemonHandler {
 				.build();
 	}
 
-	public Mono<ServerResponse> checkIn(ServerRequest req) {
-		return req.bodyToMono(byte[].class).flatMap(body -> {
-			try (GZIPInputStream inputStream = new GZIPInputStream(
-					new ByteArrayInputStream(body))) {
-				String all = StreamUtils.copyToString(inputStream,
-						StandardCharsets.UTF_8);
-				System.out.println(all);
-			}
-			catch (IOException e) {
-				return Mono.error(e);
-			}
-			return ServerResponse.ok() //
-					.contentType(APPLICATION_STREAM_JSON) //
-					.syncBody("{}");
-		});
-	}
-
 	public Mono<ServerResponse> pushData(ServerRequest req) {
 		return req.bodyToMono(byte[].class).flatMap(body -> {
 			try (GZIPInputStream inputStream = new GZIPInputStream(
