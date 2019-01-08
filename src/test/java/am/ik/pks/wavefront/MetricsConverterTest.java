@@ -34,6 +34,24 @@ public class MetricsConverterTest {
 	}
 
 	@Test
+	public void convertDouble() {
+		MetricsConverter converter = new MetricsConverter();
+		GaugeMetrics gauge = converter.convert(
+				"\"pks.heapster.node.cpu.node_utilization\" 0.064 1546844220 source=\"172.16.2.16\" \"cluster\"=\"service-instance_16bd67d5-acf3-4e97-9f04-d7dfab9cc83a\" "
+						+ "\"nodename\"=\"fd5d1ff7-115b-428b-b496-171e2b4c05a5\" \"schedulable\"=\"true\" \"type\"=\"node\"\n");
+
+		assertThat(gauge).isNotNull();
+		assertThat(gauge.name()).isEqualTo("pks.heapster.node.cpu.node_utilization");
+		assertThat(gauge.value()).isEqualTo(0.064);
+		assertThat(gauge.timestamp()).isEqualTo(1546844220L);
+		assertThat(gauge.tags()).containsExactly(Tag.of("source", "172.16.2.16"),
+				Tag.of("cluster",
+						"service-instance_16bd67d5-acf3-4e97-9f04-d7dfab9cc83a"),
+				Tag.of("nodename", "fd5d1ff7-115b-428b-b496-171e2b4c05a5"),
+				Tag.of("schedulable", "true"), Tag.of("type", "node"));
+	}
+
+	@Test
 	public void convertShortenDoubleFormat() {
 		MetricsConverter converter = new MetricsConverter();
 		GaugeMetrics gauge = converter.convert(
@@ -93,6 +111,7 @@ public class MetricsConverterTest {
 				new InputStreamReader(resource.getInputStream()))) {
 			String line = reader.readLine();
 			do {
+				converter.convert(line);
 				line = reader.readLine();
 			}
 			while (line != null);
