@@ -2,15 +2,13 @@ package am.ik.pks.wavefront;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 public class GaugeMetrics {
-	private static final Logger log = LoggerFactory.getLogger(GaugeMetrics.class);
 	private final String name;
 	private final double value;
 	private final long timestamp;
@@ -23,15 +21,8 @@ public class GaugeMetrics {
 		this.tags = tags;
 	}
 
-	public void register(MeterRegistry meterRegistry) {
-		try {
-			Gauge.builder(this.name, this::value) //
-					.tags(this.tags) //
-					.register(meterRegistry);
-		}
-		catch (IllegalArgumentException e) {
-			log.debug("{}", e.getMessage());
-		}
+	Tuple2<String, List<Tag>> key() {
+		return Tuples.of(this.name, this.tags);
 	}
 
 	@Override
@@ -55,5 +46,22 @@ public class GaugeMetrics {
 
 	List<Tag> tags() {
 		return tags;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		GaugeMetrics that = (GaugeMetrics) o;
+		return Objects.equals(name, that.name) && Objects.equals(tags, that.tags);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, tags);
 	}
 }

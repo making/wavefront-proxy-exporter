@@ -21,10 +21,13 @@ import static org.springframework.http.MediaType.APPLICATION_STREAM_JSON;
 @Configuration
 public class DaemonHandler {
 	private final MeterRegistry meterRegistry;
+	private final GaugeMetricsRegistrar gaugeMetricsRegistrar;
 	private final MetricsConverter converter = new MetricsConverter();
 
-	public DaemonHandler(MeterRegistry meterRegistry) {
+	public DaemonHandler(MeterRegistry meterRegistry,
+			GaugeMetricsRegistrar gaugeMetricsRegistrar) {
 		this.meterRegistry = meterRegistry;
+		this.gaugeMetricsRegistrar = gaugeMetricsRegistrar;
 	}
 
 	@Bean
@@ -46,7 +49,7 @@ public class DaemonHandler {
 				String[] lines = all.split("\n");
 				for (String line : lines) {
 					GaugeMetrics gaugeMetrics = this.converter.convert(line.trim());
-					gaugeMetrics.register(this.meterRegistry);
+					gaugeMetricsRegistrar.register(gaugeMetrics);
 				}
 			}
 			catch (IOException e) {
